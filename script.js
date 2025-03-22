@@ -35,22 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
     body.classList.add('light-theme');
   }
 
-  // Sidebar toggle for mobile
-  sidebarToggle.addEventListener('click', function() {
-    sidebar.classList.add('open');
-    sidebarOverlay.classList.add('show');
-  });
-
-  sidebarClose.addEventListener('click', function() {
-    sidebar.classList.remove('open');
-    sidebarOverlay.classList.remove('show');
-  });
-
-  sidebarOverlay.addEventListener('click', function() {
-    sidebar.classList.remove('open');
-    sidebarOverlay.classList.remove('show');
-  });
-
   // Auto-resize textarea
   chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
@@ -79,33 +63,86 @@ document.addEventListener('DOMContentLoaded', function() {
     showTypingIndicator();
     
     // Simulate AI response after delay
-    setTimeout(() => {
+    // setTimeout(() => {
+    //   removeTypingIndicator();
+    //   addMessage(`Here's a solution to your query: "${message}".\n\nI've analyzed your request and prepared a comprehensive response based on the latest data and best practices.`, 'assistant');
+    // }, 1500);
+
+    fetch('http://your-backend-url/chat', { // BACKEND Url
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message })
+    })
+    .then(response => response.json())
+    .then(data => {
       removeTypingIndicator();
-      addMessage(`Here's a solution to your query: "${message}".\n\nI've analyzed your request and prepared a comprehensive response based on the latest data and best practices.`, 'assistant');
-    }, 1500);
+      addMessage(data.response, 'assistant');
+    })
+    .catch(error => {
+      removeTypingIndicator();
+      addMessage("Sorry, there was an error processing your request.", 'assistant');
+      console.error("Error:", error);
+    });
+    
   });
 
   // Function to add a message to the chat
-  function addMessage(content, role) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('chat-message', role);
+  // function addMessage(content, role) {
+  //   const messageDiv = document.createElement('div');
+  //   messageDiv.classList.add('chat-message', role);
     
-    const header = document.createElement('div');
-    header.classList.add('chat-message-header');
-    header.textContent = role === 'user' ? 'You' : 'AI Assistant';
+  //   const header = document.createElement('div');
+  //   header.classList.add('chat-message-header');
+  //   header.textContent = role === 'user' ? 'You' : 'AI Assistant';
     
-    const messageContent = document.createElement('div');
-    messageContent.classList.add('chat-message-content');
+  //   const messageContent = document.createElement('div');
+  //   messageContent.classList.add('chat-message-content');
+  //   messageContent.textContent = content;
+    
+  //   messageDiv.appendChild(header);
+  //   messageDiv.appendChild(messageContent);
+    
+  //   chatMessages.appendChild(messageDiv);
+    
+  //   // Scroll to bottom
+  //   chatMessages.scrollTop = chatMessages.scrollHeight;
+  // }
+
+
+  // Function to add a message to the chat
+function addMessage(content, role) {
+  const messageDiv = document.createElement('div');
+  messageDiv.classList.add('chat-message', role);
+  
+  const header = document.createElement('div');
+  header.classList.add('chat-message-header');
+  header.textContent = role === 'user' ? 'You' : 'AI Assistant';
+
+  const messageContent = document.createElement('div');
+  messageContent.classList.add('chat-message-content');
+
+  // Check if the response contains code (assuming code is wrapped in triple backticks ``` like Markdown)
+  if (content.includes("```")) {
+    const codeText = content.replace(/```/g, "").trim(); // Remove backticks
+    const pre = document.createElement('pre');
+    const code = document.createElement('code');
+    code.textContent = codeText;
+    pre.appendChild(code);
+    messageContent.appendChild(pre);
+  } else {
     messageContent.textContent = content;
-    
-    messageDiv.appendChild(header);
-    messageDiv.appendChild(messageContent);
-    
-    chatMessages.appendChild(messageDiv);
-    
-    // Scroll to bottom
-    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
+
+  messageDiv.appendChild(header);
+  messageDiv.appendChild(messageContent);
+  chatMessages.appendChild(messageDiv);
+
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 
   // Function to show typing indicator
   function showTypingIndicator() {
@@ -153,3 +190,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+
