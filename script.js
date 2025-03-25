@@ -1,194 +1,103 @@
-// Radhe Radhe
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Feather icons
-  feather.replace();
+    feather.replace(); // Initialize Feather icons
 
-  // DOM elements
-  const themeToggleBtn = document.getElementById('theme-toggle-btn');
-  const body = document.body;
-  const sidebarToggle = document.getElementById('sidebar-toggle');
-  const sidebarClose = document.getElementById('sidebar-close');
-  const sidebar = document.getElementById('sidebar');
-  const sidebarOverlay = document.getElementById('sidebar-overlay');
-  const chatForm = document.getElementById('chat-form');
-  const chatInput = document.getElementById('chat-input');
-  const chatMessages = document.getElementById('chat-messages');
-  const chatEmpty = document.querySelector('.chat-empty');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const body = document.body;
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatEmpty = document.querySelector('.chat-empty');
 
-  // Theme toggle
-  themeToggleBtn.addEventListener('click', function() {
-    if (body.classList.contains('dark-theme')) {
-      body.classList.remove('dark-theme');
-      body.classList.add('light-theme');
-      localStorage.setItem('theme', 'light');
-    } else {
-      body.classList.remove('light-theme');
-      body.classList.add('dark-theme');
-      localStorage.setItem('theme', 'dark');
-    }
-  });
-
-  // Check for saved theme preference
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'light') {
-    body.classList.remove('dark-theme');
-    body.classList.add('light-theme');
-  }
-
-  // Auto-resize textarea
-  chatInput.addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = (this.scrollHeight) + 'px';
-  });
-
-  // Handle chat form submission
-  chatForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const message = chatInput.value.trim();
-    if (!message) return;
-
-    // Remove empty state if present
-    if (chatEmpty) {
-      chatEmpty.remove();
-    }
-
-    // Add user message
-    addMessage(message, 'user');
-    
-    // Clear input
-    chatInput.value = '';
-    chatInput.style.height = 'auto';
-    
-    // Show typing indicator
-    showTypingIndicator();
-    
-    // Simulate AI response after delay
-    // setTimeout(() => {
-    //   removeTypingIndicator();
-    //   addMessage(`Here's a solution to your query: "${message}".\n\nI've analyzed your request and prepared a comprehensive response based on the latest data and best practices.`, 'assistant');
-    // }, 1500);
-
-    fetch('http://your-backend-url/chat', { // BACKEND Url
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ message })
-    })
-    .then(response => response.json())
-    .then(data => {
-      removeTypingIndicator();
-      addMessage(data.response, 'assistant');
-    })
-    .catch(error => {
-      removeTypingIndicator();
-      addMessage("Sorry, there was an error processing your request.", 'assistant');
-      console.error("Error:", error);
+    // 🌙 Theme Toggle
+    themeToggleBtn.addEventListener('click', function() {
+        if (body.classList.contains('dark-theme')) {
+            body.classList.remove('dark-theme');
+            body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            body.classList.remove('light-theme');
+            body.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark');
+        }
     });
-    
-  });
 
-  // Function to add a message to the chat
-  // function addMessage(content, role) {
-  //   const messageDiv = document.createElement('div');
-  //   messageDiv.classList.add('chat-message', role);
-    
-  //   const header = document.createElement('div');
-  //   header.classList.add('chat-message-header');
-  //   header.textContent = role === 'user' ? 'You' : 'AI Assistant';
-    
-  //   const messageContent = document.createElement('div');
-  //   messageContent.classList.add('chat-message-content');
-  //   messageContent.textContent = content;
-    
-  //   messageDiv.appendChild(header);
-  //   messageDiv.appendChild(messageContent);
-    
-  //   chatMessages.appendChild(messageDiv);
-    
-  //   // Scroll to bottom
-  //   chatMessages.scrollTop = chatMessages.scrollHeight;
-  // }
-
-
-  // Function to add a message to the chat
-function addMessage(content, role) {
-  const messageDiv = document.createElement('div');
-  messageDiv.classList.add('chat-message', role);
-  
-  const header = document.createElement('div');
-  header.classList.add('chat-message-header');
-  header.textContent = role === 'user' ? 'You' : 'AI Assistant';
-
-  const messageContent = document.createElement('div');
-  messageContent.classList.add('chat-message-content');
-
-  // Check if the response contains code (assuming code is wrapped in triple backticks ``` like Markdown)
-  if (content.includes("```")) {
-    const codeText = content.replace(/```/g, "").trim(); // Remove backticks
-    const pre = document.createElement('pre');
-    const code = document.createElement('code');
-    code.textContent = codeText;
-    pre.appendChild(code);
-    messageContent.appendChild(pre);
-  } else {
-    messageContent.textContent = content;
-  }
-
-  messageDiv.appendChild(header);
-  messageDiv.appendChild(messageContent);
-  chatMessages.appendChild(messageDiv);
-
-  // Scroll to bottom
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-
-  // Function to show typing indicator
-  function showTypingIndicator() {
-    const typingDiv = document.createElement('div');
-    typingDiv.classList.add('chat-typing');
-    typingDiv.id = 'typing-indicator';
-    
-    const header = document.createElement('div');
-    header.classList.add('chat-message-header');
-    header.textContent = 'AI Assistant';
-    
-    const dots = document.createElement('div');
-    dots.style.display = 'flex';
-    dots.style.gap = '0.25rem';
-    
-    for (let i = 0; i < 3; i++) {
-      const dot = document.createElement('div');
-      dot.classList.add('chat-typing-dot');
-      dots.appendChild(dot);
-    }
-    
-    typingDiv.appendChild(header);
-    typingDiv.appendChild(dots);
-    
-    chatMessages.appendChild(typingDiv);
-    
-    // Scroll to bottom
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-
-  // Function to remove typing indicator
-  function removeTypingIndicator() {
-    const typingIndicator = document.getElementById('typing-indicator');
-    if (typingIndicator) {
-      typingIndicator.remove();
-    }
-  }
-
-  // Sidebar navigation items
-  const navItems = document.querySelectorAll('.sidebar-nav-item');
-  navItems.forEach(item => {
-    item.addEventListener('click', function() {
-      navItems.forEach(i => i.classList.remove('active'));
-      this.classList.add('active');
+    // 📝 Auto-resize textarea
+    chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
     });
-  });
+
+    // 💬 Chat Form Submission
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        if (chatEmpty) chatEmpty.remove(); // Remove "empty chat" message
+
+        addMessage(message, 'user'); // User message
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+
+        showTypingIndicator(); // Show typing dots
+
+        // Fetch AI response from Shankar GPT-3 API
+        fetch(`https://shankar-gpt-3-api.vercel.app/api?message=${encodeURIComponent(message)}`)
+            .then(response => response.json())
+            .then(data => {
+                removeTypingIndicator();
+                if (data.status) {
+                    addMessage(data.response, 'assistant'); // AI Response
+                } else {
+                    addMessage("Oops! Kuch gadbad ho gayi. 😕", 'assistant');
+                }
+            })
+            .catch(error => {
+                removeTypingIndicator();
+                addMessage("Sorry, error aa gaya. 🚨", 'assistant');
+                console.error("Error:", error);
+            });
+    });
+
+    // ➕ Add Message to Chat
+    function addMessage(content, role) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('chat-message', role);
+
+        const header = document.createElement('div');
+        header.classList.add('chat-message-header');
+        header.textContent = role === 'user' ? 'You' : 'AI Assistant';
+
+        const messageContent = document.createElement('div');
+        messageContent.classList.add('chat-message-content');
+        messageContent.textContent = content;
+
+        messageDiv.appendChild(header);
+        messageDiv.appendChild(messageContent);
+        chatMessages.appendChild(messageDiv);
+
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+    }
+
+    // ⏳ Show Typing Indicator
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.classList.add('chat-typing');
+        typingDiv.id = 'typing-indicator';
+
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('chat-typing-dot');
+            typingDiv.appendChild(dot);
+        }
+
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // ❌ Remove Typing Indicator
+    function removeTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) typingIndicator.remove();
+    }
 });
-
-
