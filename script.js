@@ -1,7 +1,9 @@
 // Radhe Radhe
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Feather icons
   feather.replace();
 
+  // DOM elements
   const themeToggleBtn = document.getElementById('theme-toggle-btn');
   const body = document.body;
   const chatForm = document.getElementById('chat-form');
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Auto-resize textarea
   chatInput.addEventListener('input', function() {
     this.style.height = 'auto';
-    this.style.height = this.scrollHeight + 'px';
+    this.style.height = (this.scrollHeight) + 'px';
   });
 
   // Handle chat form submission
@@ -48,24 +50,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add user message
     addMessage(message, 'user');
-
+    
     // Clear input
     chatInput.value = '';
     chatInput.style.height = 'auto';
-
+    
     // Show typing indicator
     showTypingIndicator();
-
-    // ✅ API CALL TO SHANKAR GPT-3
+    
+    // Call API
     fetch(`https://shankar-gpt-3-api.vercel.app/api?message=${encodeURIComponent(message)}`)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP Error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then(data => {
         removeTypingIndicator();
-        addMessage(data.response, 'assistant');
+        if (data.status && data.response) {
+          addMessage(data.response, 'assistant');
+        } else {
+          addMessage("❌ API से सही डेटा नहीं मिला।", 'assistant');
+        }
       })
       .catch(error => {
         removeTypingIndicator();
-        addMessage("❌ Error: Unable to process request.", 'assistant');
+        addMessage(`❌ Error: ${error.message}`, 'assistant');
         console.error("API Error:", error);
       });
   });
@@ -74,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
   function addMessage(content, role) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('chat-message', role);
-
+    
     const header = document.createElement('div');
     header.classList.add('chat-message-header');
     header.textContent = role === 'user' ? 'You' : 'AI Assistant';
@@ -82,8 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageContent = document.createElement('div');
     messageContent.classList.add('chat-message-content');
 
+    // Check if the response contains code (assuming code is wrapped in triple backticks ``` like Markdown)
     if (content.includes("```")) {
-      const codeText = content.replace(/```/g, "").trim();
+      const codeText = content.replace(/```/g, "").trim(); // Remove backticks
       const pre = document.createElement('pre');
       const code = document.createElement('code');
       code.textContent = codeText;
@@ -106,25 +118,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const typingDiv = document.createElement('div');
     typingDiv.classList.add('chat-typing');
     typingDiv.id = 'typing-indicator';
-
+    
     const header = document.createElement('div');
     header.classList.add('chat-message-header');
     header.textContent = 'AI Assistant';
-
+    
     const dots = document.createElement('div');
     dots.style.display = 'flex';
     dots.style.gap = '0.25rem';
-
+    
     for (let i = 0; i < 3; i++) {
       const dot = document.createElement('div');
       dot.classList.add('chat-typing-dot');
       dots.appendChild(dot);
     }
-
+    
     typingDiv.appendChild(header);
     typingDiv.appendChild(dots);
+    
     chatMessages.appendChild(typingDiv);
-
+    
     // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
@@ -136,4 +149,13 @@ document.addEventListener('DOMContentLoaded', function() {
       typingIndicator.remove();
     }
   }
+
+  // Sidebar navigation items
+  const navItems = document.querySelectorAll('.sidebar-nav-item');
+  navItems.forEach(item => {
+    item.addEventListener('click', function() {
+      navItems.forEach(i => i.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
 });
